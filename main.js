@@ -31,7 +31,7 @@
     })
 
     win.loadFile('select.html')
-    //  win.webContents.openDevTools()
+    win.webContents.openDevTools()
     win.webContents.on('did-finish-load',()=>{
         createMenuBar()
     })
@@ -86,11 +86,11 @@ function createMenuBar(){
 app.whenReady().then(() =>{
     createWindow()
     ipcMain.on('start_record_screen',() => {
-        win.setIgnoreMouseEvents(true)
+     //   win.setIgnoreMouseEvents(true)
         win.webContents.send('start_record_screen','-')
     })
     ipcMain.on('save_record_screen',() => {
-        win.setIgnoreMouseEvents(false)
+      //  win.setIgnoreMouseEvents(false)
         win.webContents.send('save_record_screen','-')
     })
 })

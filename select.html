@@ -83,27 +83,62 @@
                         }
                     }
                 }).then(stream => {
+ 
+                    stream.getAudioTracks().forEach(element => {
+                        console.log(`原始 轨道  ${element.kind}`)
+                    });
                     document.getElementById('interview-video').srcObject = stream
                     canvas.srcObject = stream;
                     const capture = document.getElementById('capture')
                     const recordStream = capture.captureStream()
 
-                        recorder = new MediaRecorder(recordStream,{
-                                mimeType:'video/webm;codecs=vp9'
-                        })
 
-                    recorder.start()
-                    recorder.ondataavailable = e => {
-                        let blob = new Blob([event.data],{type:'video/webm'})
-                        var urlObject = window.URL || window.webkitURL || window 
-                        const videoUrl = urlObject.createObjectURL(blob)
-                        var a = document.createElement('a')
-                        a.href = videoUrl
-                        a.download = 'record-ccc.webm'
-                        a.style.display = 'none'
-                        document.body.appendChild(a)
-                        a.click()
-                    }  
+                    const desktopAudioTrack = stream.getAudioTracks()[0]
+
+                    //获取麦克风音轨
+                    navigator.mediaDevices.getUserMedia({audio:true, video:false}).then(audioStream => {
+
+
+
+                            let audioContext = new AudioContext()
+                            let microphoneStreamNode = audioContext.createMediaStreamSource(audioStream)
+                            let sysAudioStream = new MediaStream()
+                            sysAudioStream.addTrack(desktopAudioTrack)
+                            let sysAudioStreamNode = audioContext.createMediaStreamSource(sysAudioStream)
+                            let mixedOutput = audioContext.createMediaStreamDestination()
+                            microphoneStreamNode.connect(mixedOutput)
+                            sysAudioStreamNode.connect(mixedOutput)
+                            let mixedStream = mixedOutput.stream 
+
+
+                        recordStream.addTrack(mixedStream.getAudioTracks()[0])
+
+
+                            //添加桌面音轨
+                            //recordStream.addTrack(stream.getAudioTracks()[0])
+
+                            recordStream.getTracks().forEach(element => {
+                                console.log(`截取后 轨道  ${element.kind}`)
+                            });
+
+
+                                recorder = new MediaRecorder(recordStream,{
+                                        mimeType:'video/webm;codecs=vp9'
+                                })
+
+                            recorder.start()
+                            recorder.ondataavailable = e => {
+                                let blob = new Blob([event.data],{type:'video/webm'})
+                                var urlObject = window.URL || window.webkitURL || window 
+                                const videoUrl = urlObject.createObjectURL(blob)
+                                var a = document.createElement('a')
+                                a.href = videoUrl
+                                a.download = 'record-ccc.webm'
+                                a.style.display = 'none'
+                                document.body.appendChild(a)
+                                a.click()
+                            }   
+                       })
                     })
                 })
             }
