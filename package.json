@@ -1,0 +1,41 @@
+{
+  "name": "electron-record",
+  "version": "1.0.0",
+  "main": "main.js",
+  "license": "electron .",
+  "scripts": {
+    "start": "electron .",
+    "dist-win":"electron-builder"
+  },
+  "build": {
+    "productName": "硬剪",
+    "appId": "hard.cut",
+    "directories": {
+      "output": "dist"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "win": {
+      "icon": "build/icon.jpg",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "ia32"
+          ]
+        }
+      ]
+    }
+  },
+  "dependencies": {
+   
+  },
+  "devDependencies": {
+    "electron": "^9.0.3",
+    "electron-builder": "^22.7.0"
+  }
+}

@@ -1,0 +1,27 @@
+<!--
+ * @Description: 
+ * @Version: 
+ * @Author: liu
+ * @Date: 2020-06-11 13:33:29
+--> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>menubar</title>
+</head>
+<body>
+    <script type="text/javascript">
+        function startRecord()
+        {
+            window.electron.ipcRenderer.send('start_record_screen','-')
+        }
+        function saveRecord(){
+            window.electron.ipcRenderer.send('save_record_screen','-')
+        }
+    </script>
+    <input type="button" value="开始" onclick="startRecord()"/>
+    <input type="button" value="结束" onclick="saveRecord()">
+</body>
+</html>

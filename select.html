@@ -1,0 +1,118 @@
+<!--
+ * @Description: 
+ * @Version: 
+ * @Author: liu
+ * @Date: 2020-06-10 19:58:05
+--> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>selector</title>
+    <link rel="stylesheet" href="select.css">
+</head>
+<body>
+    <script>
+        var x,y,w,h,recorder;
+        const RECORD_MARGIN = 4
+
+        function save()
+        {
+            recorder.stop()
+        }
+
+        window.electron.ipcRenderer.on('start_record_screen',() => {
+            record()
+        })
+
+        window.electron.ipcRenderer.on('save_record_screen', () => {
+            save()
+        })
+
+        function record(){  
+
+            x = window.screenX || window.screenLeft
+            y = window.screenY || window.screenTop
+
+            w = window.innerWidth || document.documentElement.clientWidth
+            h = window.innerHeight || document.documentElement.clientHeight
+
+            const canvas = document.getElementById('canvas')
+            const capture = document.getElementById('capture')
+            const video = document.getElementById('interview-video')
+
+            canvas.style.width = `${window.screen.width}px`
+            canvas.style.height = `${window.screen.height}px`
+            canvas.width = `${w}`
+            canvas.height = `${h}`
+
+            capture.style.width = `${w}px`
+            capture.style.height = `${h}px`
+            capture.width = `${w}`
+            capture.height = `${h}`
+
+            video.style.width = `${window.screen.width}px`
+            video.style.height = `${window.screen.height}px`
+
+            const ctx = canvas.getContext('2d')
+            var ctxc = capture.getContext('2d')
+
+            const draw = function(axisX) {                
+                ctx.drawImage(video,0,0,window.screen.width,window.screen.height)
+                ctxc.drawImage(video,x + RECORD_MARGIN,y + RECORD_MARGIN,w - 2 * RECORD_MARGIN,h - 2 * RECORD_MARGIN,0,0,w,h)
+                requestAnimationFrame(draw)
+            }
+            requestAnimationFrame(draw)
+
+            window.electron.desktopCapturer.getSources({types:['screen']}).then(res => {
+                navigator
+                .mediaDevices
+                .getUserMedia({
+                    audio:{
+                        mandatory:{
+                            chromeMediaSource:'desktop'
+                        }
+                    },
+                    video:{
+                        mandatory:{
+                            chromeMediaSource:'desktop',
+                            chromeMediaSourceId:res[0].id,
+                            maxWidth:window.screen.width,
+                            maxHeight:window.screen.height
+                        }
+                    }
+                }).then(stream => {
+                    document.getElementById('interview-video').srcObject = stream
+                    canvas.srcObject = stream;
+                    const capture = document.getElementById('capture')
+                    const recordStream = capture.captureStream()
+
+                        recorder = new MediaRecorder(recordStream,{
+                                mimeType:'video/webm;codecs=vp9'
+                        })
+
+                    recorder.start()
+                    recorder.ondataavailable = e => {
+                        let blob = new Blob([event.data],{type:'video/webm'})
+                        var urlObject = window.URL || window.webkitURL || window 
+                        const videoUrl = urlObject.createObjectURL(blob)
+                        var a = document.createElement('a')
+                        a.href = videoUrl
+                        a.download = 'record-ccc.webm'
+                        a.style.display = 'none'
+                        document.body.appendChild(a)
+                        a.click()
+                    }  
+                    })
+                })
+            }
+    </script>
+    <div id="capture-container">
+        <video id="interview-video" controls="controls" style="display: none;" autoPlay muted width="1" height="1"></video>
+        <canvas id="canvas" width="1" height="1" style="display: none;"></canvas>
+        <canvas id="capture" width="1" height="1" style=" border: 5px solid red;display: none;"></canvas>
+    </div>
+</body>
+
+</html>
